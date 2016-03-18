@@ -1,0 +1,218 @@
+Internet of Things: Bacon Technologies
+===================
+*Internet of Things Challenge*
+
+Team:
+
+ - Juan Antonio Melendres V.
+ - Jesús Alberto Álvarez G.
+ - Kevin George McCallum C.
+ - Jorge Adrián Padilla V.
+ - Daniel Contreras S.
+ - Edgar Alfredo Briceño G.
+ - Pablo Muñoz H.
+ - Siomara Viridiana Jiménez L.
+ - Renato Uriel Gutiérrez S.
+ - Fredele Sentíes L.
+ - Alberto Villagómez V.
+
+
+Introduction
+-------------
+
+Everybody knows there are plenty of parking lots where it's almost impossible to find a spot. There are also many others that are not well designed and the distribution of the parking spots is not the best. That’s why we have implemented a system that helps the users by finding a parking spot for them.
+
+With Intel’s guidance we built a solution using the **Intel Edison Development Board** and a series of different sensors to detect when a car enters the parking lot and when it leaves. With this information we were able to develop and manage a database of the zones where available spaces exist. We also developed a mobile app where the user can access and check in real time where to park according to his/her necessities.
+
+> **Note**
+
+> As a team, since we're called Bacon Technology, we decided to rename Intel Edison Development Board as "Porky".
+
+### Objectives
+
+> **This project's objectives are the following:**
+
+> - Saving the user's time finding a parking spot.
+> - Adapt to the user's needs.
+> - Having a better control of employees/students/visitors time lapses and schedules.
+
+### Image
+#### Logo
+
+Our logo represents the user-app-cloud interaction while using elements, such as a car and a parking symbol, that let the users know what the app is about.
+
+![App Logo](https://raw.githubusercontent.com/BaconTechnologies/Documentation/master/logo2.jpg)
+
+#### Pet
+
+Since the company's name is "Bacon Technologies", we wanted something that was easily associated with our name. Therefore, our pet is a pig.
+
+![Pet](https://raw.githubusercontent.com/BaconTechnologies/Documentation/master/pig_on.png)
+
+#### Slogan
+
+>*Skillfull Technology Gurus*
+
+Our slogan is based on the KISS principle: "Keep it simple, stupid". It's simple and to the point; it lets people know we're there for them and we'll be able to help with whatever they need.
+
+#### Promotional Video
+Follow the link to watch the video!
+
+*https://www.youtube.com/watch?v=hoW_PAZzLLQ&feature=youtu.be*
+
+Development
+-------------------
+
+#### Requirements
+
+- A CSV text file will be used to register the entry of vehicles into the parking lot. It will contain information such as: zone number, place number and availability.
+- The "Grove-Touch Sensor" and "Grove-Button will be used".
+- Zone recommendation algorithm.
+- Scenario simulation taking into account both entry types.
+- Scalability by adding more zones, places or parking configurations.
+- Hardware focused on visualizing the state/availability of each zone's parking spaces (LED lights).
+- Android or iOS app.
+- Landing web page.
+
+### Dashboard
+
+Dashboard is a web application to monitor and manage Bacon Technology's parking lot administrator system. It's built as a single page application using Facebook's React Framework, as well as a Flux Architecture that enables it to operate under a single flow of information paradigm.
+
+The app works under the assumption that the parking lot will be divided into zones. In addition, the app introduces the concepts of places (locations associated with one parking zone).
+
+#### Components
+- **App component:**
+Located at *app/components/App.jsx.file.*
+It's the topmost component in the app; it's fairly simple since it only checks the global variable *componentType* to decide what component to display.
+
+- **EntryScreen component:**
+Located at *app/components/EntryScreen.jsx.*
+It has a simple implementation; its purpose is serving as an indicator to incoming motorists about the zone they should seek to park in. The component maintains the parking zone suggested by the system and updates its display message whenever it changes.
+
+- **ParkingLotDashboard component:**
+Located at *app/components/ParkingLotDashboard.jsx.*
+It's the most complex component in the app. It's a tabbed component, the first one is called "**Overview**" and it displays pie charts for each parking zone showing their availability. The second one is called "**Details**", it displays two tables: one containing information about the parking zones and the other with information about the places. Buttons are present for the creation, modification or deletion of elements in both zones and places.
+
+- **ZonePieChart component:**
+Located at *app/components/ZonePieChart.rst.*
+It encapsulates the task of creating a pie chart comparing the availability of a zone. This component is used by the *ParkingLotDashboard*
+
+### Store
+
+The application has a single store, *ParkingZoneStore*. It connects to the database and maintains its state in sync with it. It has the following things:
+
+- **Zones:**
+A list of object literals that function as maps containing information about each zone in the database.
+- **Places:**
+An object literal that serves as a map that matches the places names with another object literal containing the *zoneID* and category the place belongs to.
+- **setSuggestedZone:**
+Object literal with the information about the zone deemed optimal by the dispatching algorithm of the app.
+
+### Mobile App
+
+Bacon Technology's parking app server is written in NodeJS. The purpose of the server is providing a REST API that systems can make use of by retrieving, creating and updating information. We created a special store module that encapsulates the logic behind the database interactions.
+
+#### Application's database
+We used the *Firebase PAAS*, which is a NoSQL database that works using the JSON format. All data stored in the app is a child of a top root JSON object. It has three subsections (children):
+
+- **Zones:**
+They're stored in a simple object acting as a map or dictionary. The keys of the objects are the zone ID's, and are therefore, unique. The values are simple objects that store a zone's name, capacity, and occupancy.
+
+- **Places:**
+Similar to Zones, Places are stored in a simple object with values that contain the zone each place is associated with and a category.
+
+- **Suggested Zone:**
+It is merely a string in which its domain is the existing Zone ID's (the keys of the zone's child).
+
+#### store.js
+This module encapsulates the logic of interfacing with the database, it exports a number of functions specialized to perform as a single action that will impact the database. Each of the exported functions returns a JavaScript promise that is resolved or rejected once the database actions involved are successful or an error is found allowing for an asynchronous program flow.
+
+**Functions used**
+
+> - **zoneIdInUse(zonesData, zoneId):** Recieves the data about all zones in the database, and a string representing a *zoneId*. It returns whether the *zoneId* is valid or not. This function is only used internally and is not exported.
+
+> - **updateZones(zonesData):** It takes a JavaScript object literal with the same structure as the *zones* child of the database. It creates any zone not currently in the database and overrides the data of those that already exist. Any zone not included remains unchanged.
+
+> - **getAllZones():** Transforms the data of all zones in the database to a JavaScript object literals array. The id (key) has been made into an attribute and is returned.
+
+> - **createZone(zoneData):** This function takes the data of a zone as an object literal which must contain the following attributes: *id, name, capacity, occupancy*. It creates the zone and if the id already exists, it informs the caller of the collision.
+
+> - **getZone(zoneId):** Returns a JavaScript object literal with the data of a zone with the given zoneId. Unless there exists no zone with that id, the user is informed of the error.
+
+> - **makeZoneUpdater(modifierFn):** This is an internal function used to create functions that modify a specific attribute of a given zone, setting it to the result of a given function.
+
+> - **incrementZoneOccupancy(zoneId):** Function created by the *makeZoneUpdater()* function and when called, increments the occupancy of the zone with the given id. Unless the occupancy already equals the capacity, in which case it does nothing.
+
+> - **decreemntZoneOccupancy(zoneId):** Function created by the *makeZoneUpdater()* function and when called, decrements the occupancy of the zone with the given id. Unless the occupancy already equals the capacity, in which case it does nothing.
+
+> - **setSuggestedZone(zoneId):** This function takes the id of a zone and sets it as the value of the suggestedZone database child node.
+
+> - **getSuggestedZone(zoneId):** Returns the suggestedZone.
+
+> - **setZonePlaces(placesData):** This function takes a JavaScript object literal with the same structure as the places database child and sets it. As a consequence, any non-existing places are created. Existing places are overridden and places not included in the given data aren't modified.
+
+> - **getZonePlaces():** This function returns all the data about the places (childs of the database).
+
+> - **deletePlace(placeName)
+:** This function takes the name (key) of a place and deletes it from the database.
+
+#### REST API
+
+**GET /:** Displays a page that documents the API endpoints.
+
+**PUT /api/zone:** Updates a zone with the given application/json content type payload.
+
+**GET /api/zone:** Returns the data of all the zones in the application.
+
+**GET /api/zones:** Returns the data of all the zones in the application. Alias for GET /api/zone.
+
+**POST /api/zone.** Creates a zone with the given application/json content type payload.
+
+**GET /api/zone/:zoneId:** Returns the data of a zone with the given id.
+
+**DELETE /api/zone/:zoneId:** Deletes the zone with the given id.
+
+**PUT /api/zone/:zoneId:** Updates the zone with the given id, with the given application/json content type JSON.
+
+**GET /api/zone/:zoneId/enter:** Increments the occupancy of the given zone by one, as long as it doesn’t put the occupancy over the capacity.
+
+**/api/zone/:zoneId/exit:** Decrements the occupancy of the given zone by one, as long as it doesn’t put it below 0.
+
+**GET /api/places:** Returns the data of all the places in the database.
+
+**POST /api/places:** Sets the data of the given places in application/json content type.
+
+**DELETE /api/places/:placeName:** Deletes the place with the given name from the database.
+
+----------
+
+
+Installation and Use
+-------------
+Its very easy to implement one or more modules (**Porkys**), you just need to clone the git repository on the Edison board: git clone *https://github.com/BaconTechnologies/Edison.git*
+
+If you haven't installed git, follow these commands: *https://github.com/w4ilun/edison-guides/wiki/Installing-Git-on-Intel-Edison*
+
+After cloning the repository, create a parking zone through our easy dashboard: *https://desolate-sands-40235.herokuapp.com/dashboard*
+
+Selecting the "**Details**" tab and in the section "**Parking Lots Details**" there are two ways to create them, you can import an csv with the format (yellow empty file): # Id zone, # id slot, Available/Occupancy (1 or 0)
+
+> **Example**
+
+> A, 1, 0
+
+> A, 2, 1
+
+> B, 1, 1
+
+> ...
+
+Or creating one by one through the "**Create parking zone**" button (blue plus sign) and adding the id zone, name of the zone, capacity and occupancy.
+
+Your porky its almost done, just need to execute on Edison board the file "initializeParkingZone.py" using this format: *python initializeParkingZone.py ID_ZONE*
+
+> **Example**
+
+>  python initializeParkingZone.py A
+
+Perfect, your Porky is ON!
