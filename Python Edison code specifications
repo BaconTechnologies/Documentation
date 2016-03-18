@@ -7,19 +7,27 @@ lcd.py
       initialize the lcd screen and receive 3 strings
   
   attributes:
+    display: that is used to control de lcd display
 
 internet.py 
 
 import lcd.py 
   methods: 
     init()
-    
+      in order of the availability of the parking lot, set the lcd display with the number of places available and the name of the zone 
+      
     enterZone()
+      check in the database if a car enter to a certain zone and update the availability of the zone  
     
     exitZone()
-  
+      Update the database every time that a car leave the zone in the parking lot 
+      
   attributes:
-
+    limit spaces: count the maximum capacity of a zone
+    zoneId: the id of the zone
+    spaces available: count the number of spaces available
+    
+    
 parkingGeneric.py
 
 import internet.py
